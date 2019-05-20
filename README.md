@@ -1,0 +1,1 @@
+# signalk-analog-gauge
