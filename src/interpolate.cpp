@@ -1,4 +1,5 @@
 #include "interpolate.h"
+
 #include <RemoteDebug.h>
 
 Interpolate::Sample::Sample() {
@@ -97,13 +98,14 @@ bool Interpolate::set_configuration(const JsonObject& config) {
   String expected[] = { "sk_path", "samples" };
   for (auto str : expected) {
     if (!config.containsKey(str)) {
+      debugE("Can not set Interpolate configuration: missing json field %s\n", str.c_str());
       return false;
     }
   }
 
   sk_path = config["sk_path"].as<String>();
 
-  JsonArray& arr = config["values"];
+  JsonArray& arr = config["samples"];
   if (arr.size() > 0) {
     samples.clear();
     for (auto& jentry : arr) {
@@ -112,6 +114,7 @@ bool Interpolate::set_configuration(const JsonObject& config) {
     }
 
   }
+
   return true;
 
 }
