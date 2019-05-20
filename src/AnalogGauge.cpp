@@ -3,6 +3,12 @@
 #include "GaugeIcons.h"
 #include "sensesp_app.h"
 
+#include <math.h>
+
+#ifndef PI
+#define PI 3.1457
+#endif
+
 AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay, double minVal, double maxVal,
                          String config_id, String schema) :
    NumericConsumer(),
