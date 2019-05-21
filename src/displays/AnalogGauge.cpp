@@ -9,11 +9,14 @@
 #define PI 3.1457
 #endif
 
-AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay, double minVal, double maxVal,
+AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay, NumericProducer* pDisplaySource,
+                         double minVal, double maxVal,
                          String config_id, String schema) :
    NumericConsumer(),
    Configurable(config_id, schema),
    display(*pDisplay), minVal{minVal}, maxVal{maxVal} {
+
+   pDisplaySource->connectTo(this);
 
    display.fillScreen(DISPLAY_BLACK);
    display.setTextColor(DISPLAY_WHITE);

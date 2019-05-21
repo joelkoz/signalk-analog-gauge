@@ -26,18 +26,18 @@ class Interpolate : public OneToOneTransform<float> {
     };
 
  public:
-   Interpolate(String sk_path, std::set<Sample>* defaults = NULL, String id="", String schema="", uint8_t valueIdx = 0);
+   Interpolate(String sk_path, std::set<Sample>* defaults = NULL, String id="", String schema="");
 
    // Set and retrieve the transformed value
    void set_input(float input, uint8_t idx = 0) override final;
 
 
    // For outputting the results as SignalK
-   String as_json() override final;
+   String as_json() override;
 
    // For reading and writing the configuration of this transformation
-   virtual JsonObject& get_configuration(JsonBuffer& buf) override final;
-   virtual bool set_configuration(const JsonObject& config) override final;
+   virtual JsonObject& get_configuration(JsonBuffer& buf) override;
+   virtual bool set_configuration(const JsonObject& config) override;
 
    // For manually adding sample points
    void clearSamples();

@@ -8,11 +8,13 @@
 #include <system/valueconsumer.h>
 #include <system/configurable.h>
 #include <system/wantsenable.h>
+#include <system/valueproducer.h>
 
 class AnalogGauge : public NumericConsumer, public Configurable, public WantsEnable {
 
     public:
-        AnalogGauge(DFRobot_Display* pDisplay, double minVal = 0.0, double maxVal = 100.0,
+        AnalogGauge(DFRobot_Display* pDisplay, NumericProducer* pdDisplaySource,
+                    double minVal = 0.0, double maxVal = 100.0,
                     String config_id = "", String schema = "");
 
         virtual void enable() override;
