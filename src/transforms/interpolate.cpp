@@ -23,6 +23,7 @@ Interpolate::Interpolate(String sk_path, std::set<Sample>* defaults, String conf
   }
 
   load_configuration();
+
 }
 
 
@@ -55,7 +56,6 @@ void Interpolate::set_input(float input, uint8_t idx) {
     float y1 = max.output;
 
     output = (y0 * (x1 - input) + y1 * (input - x0)) / (x1 - x0);
-
   }
   else {
     // Hit the end of the table with no match.
@@ -124,5 +124,6 @@ void Interpolate::clearSamples() {
 }
 
 void Interpolate::addSample(const Sample& sample) {
-   samples.insert(sample);
+   Sample* pSampleCopy = new Sample(sample);
+   samples.insert(*pSampleCopy);
 }

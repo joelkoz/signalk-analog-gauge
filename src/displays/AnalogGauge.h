@@ -10,30 +10,60 @@
 #include <system/wantsenable.h>
 #include <system/valueproducer.h>
 
-class AnalogGauge : public NumericConsumer, public Configurable, public WantsEnable {
+
+/**
+ * An analog gauge that displays on an LCD.  The gauge supports up to five inputs
+ * with each input having a specialized display suffix.
+ *   If a BooleanProducer is attached to the gauge, the gauge can scroll thru 
+ * five inputs on the digital display.  The analog dial will always display 
+ * the incomming value of input 0.
+ */
+class AnalogGauge : public NumericConsumer, public BooleanConsumer,
+                    public Configurable, public WantsEnable {
 
     public:
-        AnalogGauge(DFRobot_Display* pDisplay, NumericProducer* pdDisplaySource,
+        AnalogGauge(DFRobot_Display* pDisplay,
                     double minVal = 0.0, double maxVal = 100.0,
                     String config_id = "", String schema = "");
 
         virtual void enable() override;
 
+        /**
+         * Handles input of new values to display in digital portion.
+         */
         virtual void set_input(float newValue, uint8_t idx = 0) override;
 
+        /**
+         * Handles button presses
+         */
+        virtual void set_input(bool newValue, uint8_t idx = 0) override;
+
+        void setGaugeIcon(uint8_t* pNewIcon) { pGaugeIcon = pNewIcon; } 
+
+        void setValueSuffix(char suffix, int valueIdx);
+
     private:
-       double minVal;
-       double maxVal;
-       double valueRange;
-       double lastValue = -99.9;
+        double minVal;
+        double maxVal;
+        double valueRange;
 
-       int blinkCount = 0;
-       int wifiIcon = -1;
+        double lastDialValue = -99.9;
+        double lastDisplayValue = -99.9;
+        double* input;
+        char* valueSuffix;
+        int currentDisplayIdx;
+        int maxDisplayIdx;
+        bool ipDisplayed = false;
 
-       DFRobot_Display& display;
+
+        int blinkCount = 0;
+        int wifiIcon = -1;
+        uint8_t* pGaugeIcon;
+
+        DFRobot_Display& display;
 
         void drawDisplay();
-        void updateGauge(float newValue);
+        void updateGauge();
         void updateWifiStatus();
 
         void calcPoint(double pct, uint16_t radius, int16_t& x, int16_t& y);
