@@ -42,6 +42,12 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
 
         void setValueSuffix(char suffix, int valueIdx);
 
+        void setDefaultDisplayIndex(int valueIdx) { currentDisplayIdx = valueIdx; }
+
+        // For reading and writing the configuration
+        virtual JsonObject& get_configuration(JsonBuffer& buf) override;
+        virtual bool set_configuration(const JsonObject& config) override;
+
     private:
         double minVal;
         double maxVal;

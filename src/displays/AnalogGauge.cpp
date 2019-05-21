@@ -233,3 +233,24 @@ void AnalogGauge::set_input(bool buttonPressed, uint8_t idx) {
       updateGauge();
    }
 }
+
+
+JsonObject& AnalogGauge::get_configuration(JsonBuffer& buf) {
+  JsonObject& root = buf.createObject();
+  root["default_display"] = currentDisplayIdx;
+  return root;
+}
+
+
+bool AnalogGauge::set_configuration(const JsonObject& config) {
+
+  String expected[] = { "default_display" };
+  for (auto str : expected) {
+    if (!config.containsKey(str)) {
+      debugE("Can not set Interpolate configuration: missing json field %s\n", str.c_str());
+      return false;
+    }
+  }
+
+  currentDisplayIdx = config["default_display"];
+}
