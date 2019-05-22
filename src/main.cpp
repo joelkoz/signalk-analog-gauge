@@ -15,7 +15,7 @@
 #include "transforms/kelvintocelsius.h"
 #include "transforms/kelvintofahrenheit.h"
 #include "transforms/debounce.h"
-#include "transforms/passthroughfilter.h"
+#include "transforms/filteredpassthrough.h"
 
 
 const char* sk_path = "electrical.generator.engine.waterTemp";
@@ -58,7 +58,7 @@ ReactESP app([] () {
   AnalogVoltage* pVoltage;
 
   pAnalogInput->connectTo(pVoltage = new AnalogVoltage()) ->
-                connectTo(new NumericPassthroughFilter(0)) ->
+                connectTo(new NumericFilteredPassthrough(0)) ->
                 connectTo(new VoltageDividerR2(R1, Vin, "", "/gauge/inputs")) ->
                 connectTo(new TemperatureInterpreter("", "/gauge/curve")) ->
                 connectTo(pTempInKelvin = new Linear(sk_path, 1.0, 0.0, "/gauge/adjust")) ->
