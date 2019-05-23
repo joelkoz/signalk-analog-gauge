@@ -15,7 +15,6 @@
 #include "transforms/kelvintocelsius.h"
 #include "transforms/kelvintofahrenheit.h"
 #include "transforms/debounce.h"
-#include "transforms/filteredpassthrough.h"
 
 
 const char* sk_path = "electrical.generator.engine.waterTemp";
@@ -26,7 +25,7 @@ const float R1 = 51.0; // The resistance, in Ohms, of the R1 resitor in the anal
 
 // Wiring configuration and setup for TFT display
 #define Display DFRobot_ST7687S_Latch
-uint8_t pin_cs = D3, pin_rs = D1, pin_wr = D2, pin_lck = D4;
+uint8_t pin_cs = D2, pin_rs = D1, pin_wr = D3, pin_lck = D4;
 uint8_t button_pin = D8;
 
 ReactESP app([] () {
@@ -58,7 +57,6 @@ ReactESP app([] () {
   AnalogVoltage* pVoltage;
 
   pAnalogInput->connectTo(pVoltage = new AnalogVoltage()) ->
-                connectTo(new NumericFilteredPassthrough(0)) ->
                 connectTo(new VoltageDividerR2(R1, Vin, "", "/gauge/inputs")) ->
                 connectTo(new TemperatureInterpreter("", "/gauge/curve")) ->
                 connectTo(pTempInKelvin = new Linear(sk_path, 1.0, 0.0, "/gauge/adjust")) ->
