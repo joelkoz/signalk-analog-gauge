@@ -5,7 +5,7 @@ KelvinToCelsius::KelvinToCelsius(String sk_path, String id, String schema) :
 }
 
 
-void KelvinToCelsius::set_input(float K, uint8_t idx) {
+void KelvinToCelsius::set_input(float K, uint8_t inputChannel) {
     output = K - 273.15;
     notify();
 }

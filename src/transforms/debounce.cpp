@@ -7,7 +7,7 @@ Debounce::Debounce(int msMinDelay, String sk_path, String config_id, String sche
 }
 
 
-void Debounce::set_input(bool newValue, uint8_t valueIdx) {
+void Debounce::set_input(bool newValue, uint8_t inputChannel) {
 
     int elapsed = millis() - lastTime;
     if (newValue != output || elapsed > msMinDelay) {

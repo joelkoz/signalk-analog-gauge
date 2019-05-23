@@ -20,8 +20,8 @@ AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay,
    Configurable(config_id, schema),
    display(*pDisplay), minVal{minVal}, maxVal{maxVal} {
 
-   maxDisplayIdx = 0;
-   currentDisplayIdx = 0;
+   maxDisplayChannel = 0;
+   currentDisplayChannel = 0;
 
    input = new double[MAX_GAUGE_INPUTS];
    valueSuffix = new char[MAX_GAUGE_INPUTS];
@@ -37,14 +37,14 @@ AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay,
 
 }
 
-void AnalogGauge::setValueSuffix(char suffix, int valueIdx) {
-   if (valueIdx >= 0 && valueIdx < MAX_GAUGE_INPUTS) {
+void AnalogGauge::setValueSuffix(char suffix, int inputChannel) {
+   if (inputChannel >= 0 && inputChannel < MAX_GAUGE_INPUTS) {
 
-      if (valueIdx > maxDisplayIdx) {
-         maxDisplayIdx = valueIdx;
+      if (inputChannel > maxDisplayChannel) {
+         maxDisplayChannel = inputChannel;
       }
 
-      valueSuffix[valueIdx] = suffix;
+      valueSuffix[inputChannel] = suffix;
    }
    else {
       debugW("WARNING! calling AnalogGauge::setValueSuffix with a value index out of range - ignoring.");
@@ -170,7 +170,7 @@ void AnalogGauge::updateGauge() {
 
 
    bool wifiConnected = sensesp_app->isWifiConnected();
-   if (!wifiConnected || currentDisplayIdx > maxDisplayIdx) {
+   if (!wifiConnected || currentDisplayChannel > maxDisplayChannel) {
       if (!ipDisplayed) {
          // Display the device's IP address...
          display.fillRect(-64, 6, 128, 35, DISPLAY_BLACK);
@@ -190,14 +190,14 @@ void AnalogGauge::updateGauge() {
       }
 
       // Update the digital display...
-      float newDisplayValue = input[currentDisplayIdx];
+      float newDisplayValue = input[currentDisplayChannel];
       if (newDisplayValue != lastDisplayValue) {
 
          display.setTextColor(gaugeColor);
          display.setTextBackground(DISPLAY_BLACK);
          display.setCursor(40, 78);
          display.setTextSize(2);
-         display.printf("%5.1f%c", newDisplayValue, valueSuffix[currentDisplayIdx]);
+         display.printf("%5.1f%c", newDisplayValue, valueSuffix[currentDisplayChannel]);
 
       }
    }
@@ -224,11 +224,11 @@ void AnalogGauge::set_input(float newValue, uint8_t idx) {
 void AnalogGauge::set_input(bool buttonPressed, uint8_t idx) {
 
    if (buttonPressed) {
-       if (currentDisplayIdx > maxDisplayIdx) {
-         currentDisplayIdx = 0;
+       if (currentDisplayChannel > maxDisplayChannel) {
+         currentDisplayChannel = 0;
        }
        else {
-         currentDisplayIdx++;
+         currentDisplayChannel++;
        }
       updateGauge();
    }
@@ -237,7 +237,7 @@ void AnalogGauge::set_input(bool buttonPressed, uint8_t idx) {
 
 JsonObject& AnalogGauge::get_configuration(JsonBuffer& buf) {
   JsonObject& root = buf.createObject();
-  root["default_display"] = currentDisplayIdx;
+  root["default_display"] = currentDisplayChannel;
   return root;
 }
 
@@ -252,5 +252,5 @@ bool AnalogGauge::set_configuration(const JsonObject& config) {
     }
   }
 
-  currentDisplayIdx = config["default_display"];
+  currentDisplayChannel = config["default_display"];
 }

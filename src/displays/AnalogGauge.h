@@ -31,18 +31,18 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         /**
          * Handles input of new values to display in digital portion.
          */
-        virtual void set_input(float newValue, uint8_t idx = 0) override;
+        virtual void set_input(float newValue, uint8_t inputChannel = 0) override;
 
         /**
          * Handles button presses
          */
-        virtual void set_input(bool newValue, uint8_t idx = 0) override;
+        virtual void set_input(bool newValue, uint8_t inputChannel = 0) override;
 
         void setGaugeIcon(uint8_t* pNewIcon) { pGaugeIcon = pNewIcon; } 
 
-        void setValueSuffix(char suffix, int valueIdx);
+        void setValueSuffix(char suffix, int inputChannel);
 
-        void setDefaultDisplayIndex(int valueIdx) { currentDisplayIdx = valueIdx; }
+        void setDefaultDisplayIndex(int inputChannel) { currentDisplayChannel = inputChannel; }
 
         // For reading and writing the configuration
         virtual JsonObject& get_configuration(JsonBuffer& buf) override;
@@ -57,8 +57,8 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         double lastDisplayValue = -99.9;
         double* input;
         char* valueSuffix;
-        int currentDisplayIdx;
-        int maxDisplayIdx;
+        int currentDisplayChannel;
+        int maxDisplayChannel;
         bool ipDisplayed = false;
 
 

@@ -29,7 +29,7 @@ class Interpolate : public OneToOneTransform<float> {
    Interpolate(String sk_path, std::set<Sample>* defaults = NULL, String id="", String schema="");
 
    // Set and retrieve the transformed value
-   void set_input(float input, uint8_t idx = 0) override final;
+   void set_input(float input, uint8_t inputChannel = 0) override final;
 
 
    // For outputting the results as SignalK

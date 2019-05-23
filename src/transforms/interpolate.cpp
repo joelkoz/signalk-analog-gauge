@@ -27,7 +27,7 @@ Interpolate::Interpolate(String sk_path, std::set<Sample>* defaults, String conf
 }
 
 
-void Interpolate::set_input(float input, uint8_t idx) {
+void Interpolate::set_input(float input, uint8_t inputChannel) {
 
   float x0 = 0.0;
   float y0 = 0.0;
