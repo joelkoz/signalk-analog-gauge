@@ -16,5 +16,5 @@ TemperatureInterpreter::TemperatureInterpreter(String sk_path, String config_id,
    addSample(Interpolate::Sample(112, 344.26));
    addSample(Interpolate::Sample(240, 322.04));
    addSample(Interpolate::Sample(550, 255.37));
-   addSample(Interpolate::Sample(1000, 237.6));
+   addSample(Interpolate::Sample(10000, 237.6));
 }
