@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <system/valueconsumer.h>
 #include <system/configurable.h>
-#include <system/wantsenable.h>
+#include <system/enable.h>
 #include <system/valueproducer.h>
 
 
@@ -19,7 +19,7 @@
  * the incomming value of input 0.
  */
 class AnalogGauge : public NumericConsumer, public BooleanConsumer,
-                    public Configurable, public WantsEnable {
+                    public Configurable, public Enable {
 
     public:
         AnalogGauge(DFRobot_Display* pDisplay,
