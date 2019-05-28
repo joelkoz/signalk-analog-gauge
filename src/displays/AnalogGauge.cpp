@@ -15,9 +15,9 @@
 
 AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay,
                          double minVal, double maxVal,
-                         String config_id, String schema) :
+                         String config_path) :
    NumericConsumer(),
-   Configurable(config_id, schema),
+   Configurable(config_path),
    display(*pDisplay), minVal{minVal}, maxVal{maxVal} {
 
    maxDisplayChannel = 0;

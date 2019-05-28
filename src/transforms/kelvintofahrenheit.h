@@ -6,7 +6,7 @@
 class KelvinToFahrenheit : public OneToOneNumericTransform {
 
     public:
-       KelvinToFahrenheit(String sk_path="", String id="", String schema="");
+       KelvinToFahrenheit(String sk_path="", String config_path="");
 
         virtual void set_input(float K, uint8_t inputChannel = 0) override;
 };

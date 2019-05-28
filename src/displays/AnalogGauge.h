@@ -24,7 +24,7 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
     public:
         AnalogGauge(DFRobot_Display* pDisplay,
                     double minVal = 0.0, double maxVal = 100.0,
-                    String config_id = "", String schema = "");
+                    String config_path = "");
 
         virtual void enable() override;
 
