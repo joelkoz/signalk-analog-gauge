@@ -1,7 +1,7 @@
 #include "kelvintocelsius.h"
 
 KelvinToCelsius::KelvinToCelsius(String sk_path, String config_path) :
-   OneToOneNumericTransform(sk_path, config_path) {
+   SymmetricNumericTransform(sk_path, config_path) {
 }
 
 

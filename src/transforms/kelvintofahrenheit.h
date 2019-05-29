@@ -3,7 +3,7 @@
 
 #include "transforms/transform.h"
 
-class KelvinToFahrenheit : public OneToOneNumericTransform {
+class KelvinToFahrenheit : public SymmetricNumericTransform {
 
     public:
        KelvinToFahrenheit(String sk_path="", String config_path="");

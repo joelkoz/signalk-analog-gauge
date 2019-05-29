@@ -3,7 +3,7 @@
 
 #include "transforms/transform.h"
 
-class KelvinToCelsius : public OneToOneNumericTransform {
+class KelvinToCelsius : public SymmetricNumericTransform {
 
     public:
        KelvinToCelsius(String sk_path="", String config_path="");
