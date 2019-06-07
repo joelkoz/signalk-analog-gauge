@@ -47,7 +47,8 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         // For reading and writing the configuration
         virtual JsonObject& get_configuration(JsonBuffer& buf) override;
         virtual bool set_configuration(const JsonObject& config) override;
-
+        virtual String get_config_schema() override;
+        
     private:
         double minVal;
         double maxVal;

@@ -47,7 +47,7 @@ ReactESP app([] () {
   // Initialize the LCD display
   Display* pDisplay = new Display(pin_cs, pin_rs, pin_wr, pin_lck);
   pDisplay->begin();
-  AnalogGauge *pGauge = new AnalogGauge(pDisplay, 255.37, 414.71, "gauge/display");
+  AnalogGauge *pGauge = new AnalogGauge(pDisplay, 255.37, 414.71, "/gauge/display");
 
   AnalogInput* pAnalogInput = new AnalogInput();
   DigitalInputValue* pButton = new DigitalInputValue(button_pin, INPUT, CHANGE);
@@ -58,8 +58,8 @@ ReactESP app([] () {
 
   pAnalogInput->connectTo(pVoltage = new AnalogVoltage()) ->
                 connectTo(new VoltageDividerR2(R1, Vin, "", "/gauge/inputs")) ->
-                connectTo(new TemperatureInterpreter("", "/gauge/curve")) ->
-                connectTo(pTempInKelvin = new Linear(sk_path, 1.0, 0.0, "/gauge/adjust")) ->
+                connectTo(new TemperatureInterpreter("", "/gauge/temp_curve")) ->
+                connectTo(pTempInKelvin = new Linear(sk_path, 1.0, 0.0, "/gauge/final_temp")) ->
                 connectTo(pGauge);
   pGauge->setValueSuffix('k', 0);
 

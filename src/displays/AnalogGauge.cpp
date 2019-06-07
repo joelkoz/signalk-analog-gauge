@@ -242,12 +242,28 @@ JsonObject& AnalogGauge::get_configuration(JsonBuffer& buf) {
 }
 
 
+
+String AnalogGauge::get_config_schema() {
+
+   const char* schema_template = R"({
+      "type": "object",
+      "properties": {
+          "default_display": { "title": "Default display", "type": "number", "minimum": 0, "maximum": %d }
+      }
+   })";
+
+   char str[500];
+   sprintf(str, schema_template, maxDisplayChannel);
+   return str;
+}
+
+
 bool AnalogGauge::set_configuration(const JsonObject& config) {
 
   String expected[] = { "default_display" };
   for (auto str : expected) {
     if (!config.containsKey(str)) {
-      debugE("Can not set Interpolate configuration: missing json field %s\n", str.c_str());
+      debugE("Can not set AnalogGauge configuration: missing json field %s\n", str.c_str());
       return false;
     }
   }
