@@ -13,6 +13,17 @@
 #define MAX_GAUGE_INPUTS 5
 
 
+AnalogGauge::ValueColor::ValueColor() {
+}
+
+AnalogGauge::ValueColor::ValueColor(float minVal, float maxVal, uint16_t color) : minVal{minVal}, maxVal{maxVal}, color{color} {
+}
+
+AnalogGauge::ValueColor::ValueColor(JsonObject& obj) : minVal{obj["minVal"]}, maxVal{obj["maxVal"]}, color{obj["color"]} {
+
+}
+
+
 AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay,
                          double minVal, double maxVal,
                          String config_path) :
@@ -32,10 +43,37 @@ AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay,
    display.setCursor(26, 58);
    display.setTextSize(2);
    display.printf("SensESP");
-
    pGaugeIcon = (uint8_t*)image_data_icontemp;
 
 }
+
+
+void AnalogGauge::addValueRange(const ValueColor& newRange) {
+   ValueColor* pRange = new ValueColor(newRange);
+   valueColors.insert(*pRange);
+}
+
+
+uint16_t AnalogGauge::getValueColor(float value) {
+
+  std::set<ValueColor>::iterator it = valueColors.begin();
+
+  while (it != valueColors.end()) {
+     auto& range = *it;
+
+     if (value >= range.minVal && value <= range.maxVal) {
+        // Here is our match
+        return range.color;
+     }
+
+     it++;
+  } // while
+
+  return defaultValueColor;
+
+}
+
+
 
 void AnalogGauge::setValueSuffix(char suffix, int inputChannel) {
    if (inputChannel >= 0 && inputChannel < MAX_GAUGE_INPUTS) {
@@ -105,7 +143,19 @@ void AnalogGauge::drawDisplay() {
   drawGaugeTick(0.75, 50, 57, DISPLAY_WHITE);
   drawGaugeTick(1.0, 45, 57, DISPLAY_WHITE);
 
-  display.fillCircle(0, 0, 5, DISPLAY_WHITE);
+
+  // Draw color ranges (if any)...
+  std::set<ValueColor>::iterator it = valueColors.begin();
+  while (it != valueColors.end()) {
+     auto& range = *it;
+     double minPct = (range.minVal - minVal) / valueRange;
+     double maxPct = (range.maxVal - minVal) / valueRange;
+     drawGaugeRange(minPct, maxPct, 0.002, range.color);
+     it++;
+  } // while
+
+
+  display.fillCircle(0, 0, 3, DISPLAY_WHITE);
 
 }
 
@@ -158,7 +208,7 @@ void AnalogGauge::updateGauge() {
       newDialValue = minVal;
    }
 
-   uint16_t gaugeColor = DISPLAY_WHITE;
+   uint16_t gaugeColor = getValueColor(newDialValue);
 
    // Update the dial...
    if (newDialValue != lastDialValue) {
@@ -197,7 +247,7 @@ void AnalogGauge::updateGauge() {
          display.setTextBackground(DISPLAY_BLACK);
          display.setCursor(40, 78);
          display.setTextSize(2);
-         display.printf("%5.1f%c", newDisplayValue, valueSuffix[currentDisplayChannel]);
+         display.printf("%5.1f%c ", newDisplayValue, valueSuffix[currentDisplayChannel]);
 
       }
    }
@@ -206,6 +256,7 @@ void AnalogGauge::updateGauge() {
 
 
 void AnalogGauge::enable() {
+    load_configuration();
     drawDisplay();
     app.onRepeat(500, [this]() { this->updateWifiStatus(); });
     app.onRepeat(750, [this]() { this->updateGauge(); });
@@ -238,9 +289,49 @@ void AnalogGauge::set_input(bool buttonPressed, uint8_t idx) {
 JsonObject& AnalogGauge::get_configuration(JsonBuffer& buf) {
   JsonObject& root = buf.createObject();
   root["default_display"] = currentDisplayChannel;
+  root["minVal"] = minVal;
+  root["maxVal"] = maxVal;
+
+  JsonArray& jRanges = root.createNestedArray("ranges");
+  for (auto& range : valueColors) {
+    JsonObject& entry = buf.createObject();
+    entry["minVal"] = range.minVal;
+    entry["maxVal"] = range.maxVal;
+    entry["color"] = range.color;
+    jRanges.add(entry);
+  }
+
   return root;
 }
 
+
+bool AnalogGauge::set_configuration(const JsonObject& config) {
+
+  String expected[] = { "default_display", "minVal", "maxVal" };
+  for (auto str : expected) {
+    if (!config.containsKey(str)) {
+      debugE("Can not set AnalogGauge configuration: missing json field %s\n", str.c_str());
+      return false;
+    }
+  }
+
+  currentDisplayChannel = config["default_display"];
+  minVal = config["minVal"];
+  maxVal = config["maxVal"];
+
+  JsonArray& arr = config["ranges"];
+  if (arr.size() > 0) {
+    valueColors.clear();
+    for (auto& jentry : arr) {
+        ValueColor range(jentry.as<JsonObject>());
+        valueColors.insert(range);
+    }
+
+  }
+
+  return true;
+
+}
 
 
 String AnalogGauge::get_config_schema() {
@@ -248,7 +339,19 @@ String AnalogGauge::get_config_schema() {
    const char* schema_template = R"({
       "type": "object",
       "properties": {
-          "default_display": { "title": "Default display", "type": "number", "minimum": 0, "maximum": %d }
+         "minVal": { "title": "Minimum analog value", "type": "number"},
+         "maxVal": { "title": "Maximum analog value", "type": "number"},
+         "default_display": { "title": "Default input to display", "type": "number", "minimum": 0, "maximum": %d },
+         "ranges": { "title": "Ranges and colors",
+                      "type": "array",
+                      "items": { "title": "Range",
+                                  "type": "object",
+                                  "properties": {
+                                        "minVal": { title: "Min value for color", type": "number" },
+                                        "maxVal": { title: "Max value for color", "type": "number" },
+                                        "color": { "title": "Display color RGB", "type": "number" }
+                                  }}}
+
       }
    })";
 
@@ -258,15 +361,3 @@ String AnalogGauge::get_config_schema() {
 }
 
 
-bool AnalogGauge::set_configuration(const JsonObject& config) {
-
-  String expected[] = { "default_display" };
-  for (auto str : expected) {
-    if (!config.containsKey(str)) {
-      debugE("Can not set AnalogGauge configuration: missing json field %s\n", str.c_str());
-      return false;
-    }
-  }
-
-  currentDisplayChannel = config["default_display"];
-}

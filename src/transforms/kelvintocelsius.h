@@ -3,10 +3,10 @@
 
 #include "transforms/transform.h"
 
-class KelvinToCelsius : public SymmetricNumericTransform {
+class KelvinToCelsius : public NumericTransform {
 
     public:
-       KelvinToCelsius(String sk_path="", String config_path="");
+       KelvinToCelsius(String config_path="");
 
         virtual void set_input(float K, uint8_t inputChannel = 0) override;
 };
