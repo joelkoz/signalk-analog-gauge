@@ -1,8 +1,6 @@
 #ifndef ANALOG_GAUGE_H
 #define ANALOG_GAUGE_H
 
-#include <set>
-
 #include <DFRobot_Display.h>
 
 #include <functional>
@@ -24,19 +22,6 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
                     public Configurable, public Enable {
 
     public:
-        class ValueColor {
-            public:
-               float minVal;
-               float maxVal;
-               uint16_t color;
-
-               ValueColor();
-               ValueColor(float minVal, float maxVal, uint16_t color);
-               ValueColor(JsonObject& obj);
-
-               friend bool operator<(const ValueColor& lhs, const ValueColor& rhs) { return lhs.minVal < rhs.minVal; }               
-        };
-
         AnalogGauge(DFRobot_Display* pDisplay,
                     double minVal = 0.0, double maxVal = 100.0,
                     String config_path = "");
@@ -59,31 +44,6 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
 
         void setDefaultDisplayIndex(int inputChannel) { currentDisplayChannel = inputChannel; }
 
-
-        /**
-         * Value ranges allow for setting gauge colors like "normal operating range"
-         * and "red line" values.
-         */
-        void addValueRange(const ValueColor& newRange);
-
-        /**
-         * Returns the color associated with the specified value. If no specific color
-         * range can be found, the default color is returned.
-         * @see addValueRange()
-         * @see setDefaultValueColor
-         */
-        uint16_t getValueColor(float value);
-
-
-        /**
-         * Sets the default color for the display when a value range is requested an no specified
-         * value range color can be found.
-         */
-        void setDefaultValueColor(uint16_t newDefaultColor) { defaultValueColor = newDefaultColor; }
-
-
-        uint16_t getDefaultValueColor() { return defaultValueColor; }
-
         // For reading and writing the configuration
         virtual JsonObject& get_configuration(JsonBuffer& buf) override;
         virtual bool set_configuration(const JsonObject& config) override;
@@ -102,7 +62,6 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         int maxDisplayChannel;
         bool ipDisplayed = false;
 
-        uint16_t defaultValueColor = DISPLAY_WHITE;
 
         int blinkCount = 0;
         int wifiIcon = -1;
@@ -120,7 +79,6 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         void drawGaugeTick(double pct, uint16_t startRadius, uint16_t endRadius, uint16_t color);
         void drawNeedle(double value, uint16_t color);
 
-        std::set<ValueColor> valueColors;
 };
 
 #endif

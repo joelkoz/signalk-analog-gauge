@@ -1,7 +1,7 @@
 #include "kelvintofahrenheit.h"
 
-KelvinToFahrenheit::KelvinToFahrenheit(String config_path) :
-   NumericTransform(config_path) {
+KelvinToFahrenheit::KelvinToFahrenheit(String sk_path, String config_path) :
+   SymmetricNumericTransform(sk_path, config_path) {
 }
 
 
