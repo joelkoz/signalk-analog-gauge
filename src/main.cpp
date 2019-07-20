@@ -2,8 +2,8 @@
 
 #include "sensesp_app.h"
 #include "transforms/linear.h"
-#include "devices/analog_input.h"
-#include "devices/digital_input.h"
+#include "sensors/analog_input.h"
+#include "sensors/digital_input.h"
 
 #include "DFRobot_ST7687S_Latch.h"
 
@@ -14,6 +14,9 @@
 #include "transforms/kelvintocelsius.h"
 #include "transforms/kelvintofahrenheit.h"
 #include "transforms/debounce.h"
+#include "transforms/moving_average.h"
+#include "transforms/change_filter.h"
+#include "transforms/noise_filter.h"
 #include "signalk/signalk_output.h"
 
 const char* sk_path = "electrical.generator.engine.waterTemp";
@@ -61,11 +64,14 @@ ReactESP app([] () {
   Linear* pTempInKelvin;
   AnalogVoltage* pVoltage;
 
-  pAnalogInput->connectTo(pVoltage = new AnalogVoltage()) ->
-                connectTo(new VoltageDividerR2(R1, Vin, "/gauge/inputs")) ->
-                connectTo(new TemperatureInterpreter("/gauge/temp_curve")) ->
-                connectTo(pTempInKelvin = new Linear(1.0, 0.0, "/gauge/final_temp/calibrate")) ->
-                connectTo(new SKOutputNumber(sk_path, "/gauge/final_temp/sk")) ->
+  pAnalogInput->connectTo(new NoiseFilter(100, 20, "/gauge/smooth/noise")) ->
+                connectTo(new MovingAverage(10, 1.0, "/gauge/smooth/avg")) ->
+                connectTo(new ChangeFilter(1.0, "/gauge/smooth/change")) ->
+                connectTo(pVoltage = new AnalogVoltage()) ->
+                connectTo(new VoltageDividerR2(R1, Vin)) ->
+                connectTo(new TemperatureInterpreter("/gauge/temp/curve")) ->
+                connectTo(pTempInKelvin = new Linear(1.0, 0.0, "/gauge/temp/calibrate")) ->
+                connectTo(new SKOutputNumber(sk_path, "/gauge/temp/sk")) ->
                 connectTo(pGauge);
   pGauge->setValueSuffix('k', 0);
 
