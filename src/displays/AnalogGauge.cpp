@@ -334,30 +334,26 @@ bool AnalogGauge::set_configuration(const JsonObject& config) {
 }
 
 
+static const char SCHEMA[] PROGMEM = R"({
+   "type": "object",
+   "properties": {
+      "minVal": { "title": "Minimum analog value", "type": "number"},
+      "maxVal": { "title": "Maximum analog value", "type": "number"},
+      "default_display": { "title": "Default input to display", "type": "number", "minimum": 0, "maximum": 5 },
+      "ranges": { "title": "Ranges and colors",
+                     "type": "array",
+                     "items": { "title": "Range",
+                                 "type": "object",
+                                 "properties": {
+                                       "minVal": { "title": "Min value for color", "type": "number" },
+                                       "maxVal": { "title": "Max value for color", "type": "number" },
+                                       "color": { "title": "Display color RGB", "type": "number" }
+                                 }}}
+
+   }
+})";
+
+
 String AnalogGauge::get_config_schema() {
-
-   const char* schema_template = R"({
-      "type": "object",
-      "properties": {
-         "minVal": { "title": "Minimum analog value", "type": "number"},
-         "maxVal": { "title": "Maximum analog value", "type": "number"},
-         "default_display": { "title": "Default input to display", "type": "number", "minimum": 0, "maximum": %d },
-         "ranges": { "title": "Ranges and colors",
-                      "type": "array",
-                      "items": { "title": "Range",
-                                  "type": "object",
-                                  "properties": {
-                                        "minVal": { title: "Min value for color", type": "number" },
-                                        "maxVal": { title: "Max value for color", "type": "number" },
-                                        "color": { "title": "Display color RGB", "type": "number" }
-                                  }}}
-
-      }
-   })";
-
-   char str[500];
-   sprintf(str, schema_template, maxDisplayChannel);
-   return str;
+   return FPSTR(SCHEMA);
 }
-
-
