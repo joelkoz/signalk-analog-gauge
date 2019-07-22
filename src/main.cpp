@@ -64,7 +64,7 @@ ReactESP app([] () {
   Linear* pTempInKelvin;
   AnalogVoltage* pVoltage;
 
-  pAnalogInput->connectTo(new NoiseFilter(100, 20, "/gauge/smooth/noise")) ->
+  pAnalogInput->connectTo(new NoiseFilter(100, 8, "/gauge/smooth/noise")) ->
                 connectTo(new MovingAverage(10, 1.0, "/gauge/smooth/avg")) ->
                 connectTo(new ChangeFilter(1.0, "/gauge/smooth/change")) ->
                 connectTo(pVoltage = new AnalogVoltage()) ->
