@@ -5,6 +5,7 @@
 
 #include <ESP8266WiFi.h>
 #include <math.h>
+#include <cstring>
 
 #ifndef PI
 #define PI 3.1457
@@ -36,6 +37,9 @@ AnalogGauge::AnalogGauge(DFRobot_Display* pDisplay,
 
    input = new double[MAX_GAUGE_INPUTS];
    valueSuffix = new char[MAX_GAUGE_INPUTS];
+   std::memset(valueSuffix, ' ', MAX_GAUGE_INPUTS);
+   precision = new uint8[MAX_GAUGE_INPUTS];
+   std::memset(precision, 0, MAX_GAUGE_INPUTS);
 
    display.fillScreen(DISPLAY_BLACK);
    display.setTextColor(DISPLAY_WHITE);
@@ -85,9 +89,25 @@ void AnalogGauge::setValueSuffix(char suffix, int inputChannel) {
       valueSuffix[inputChannel] = suffix;
    }
    else {
-      debugW("WARNING! calling AnalogGauge::setValueSuffix with a value index out of range - ignoring.");
+      debugW("WARNING! calling AnalogGauge::setValueSuffix with an input channel out of range - ignoring.");
    }
 }
+
+
+void AnalogGauge::setPrecision(uint8 precision, int inputChannel) {
+   if (inputChannel >= 0 && inputChannel < MAX_GAUGE_INPUTS) {
+
+      if (inputChannel > maxDisplayChannel) {
+         maxDisplayChannel = inputChannel;
+      }
+
+      this->precision[inputChannel] = precision;
+   }
+   else {
+      debugW("WARNING! calling AnalogGauge::setPrecision with an input channel out of range - ignoring.");
+   }
+}
+
 
 
 void AnalogGauge::calcPoint(double pct, uint16_t radius, int16_t& x, int16_t& y) {
@@ -166,34 +186,53 @@ void AnalogGauge::updateWifiStatus() {
    bool wifiConnected = sensesp_app->isWifiConnected();
    bool sigkConnected = sensesp_app->isSignalKConnected();
 
-   int blinkRate = (wifiConnected ? 4 : 2);
+   int blinkRate = 2;
 
-   bool displayAsConnected = (wifiConnected && sigkConnected) || (blinkCount % blinkRate == 0);
+   bool blinkDisplay =  (blinkCount % blinkRate == 0);
 
-  if (displayAsConnected) {
-     if (wifiIcon != 1) {
-        if (wifiConnected && sigkConnected) {
-            display.drawBmp(pGaugeIcon, -14, 35, 28, 26);  
-        }
-        else {
-           display.drawBmp((uint8_t*)image_data_iconwifi, -12, 35, 23, 20);  
-        }
-     }
-     wifiIcon = 1;
-  }
-  else {
-     if (wifiIcon != 0) {
-        if (wifiConnected && !sigkConnected) {
-            display.drawBmp(pGaugeIcon, -14, 35, 28, 26);  
-        }
-        else {
-           display.fillRect(-12, 35, 23, 20, DISPLAY_BLACK);
-        }
-     }
-     wifiIcon = 0;
-  }
+   int newIcon;
 
-  blinkCount = (blinkCount + 1) % blinkRate;
+   if (wifiConnected && sigkConnected) {
+      newIcon = 2;
+   }
+   else if (blinkDisplay) {
+     newIcon = (displayIcon+1) % 4;
+     if (!wifiConnected) {
+        if (newIcon == 2) {
+           newIcon = 0;
+        }
+     } 
+   }
+   else {
+     newIcon = displayIcon;
+   }
+
+   switch (newIcon) {
+      case 0:
+         if (displayIcon != 0) {
+            display.drawBmp((uint8_t*)image_data_iconwifi, -12, 35, 23, 20); 
+            displayIcon = 0;
+         }
+         break;
+
+      case 1:
+      case 3:
+         if (displayIcon != 1 && displayIcon != 3) {
+            display.fillRect(-14, 35, 28, 26, DISPLAY_BLACK);
+            displayIcon = newIcon;
+         }
+         break;
+
+      case 2:
+         if (displayIcon != 2) {
+            display.drawBmp(pGaugeIcon, -14, 35, 28, 26);   
+            displayIcon = 2;
+         }
+         break;
+
+   } // switch
+
+   blinkCount = (blinkCount + 1) % blinkRate;
 }
 
 
@@ -223,7 +262,7 @@ void AnalogGauge::updateGauge() {
    if (!wifiConnected || currentDisplayChannel > maxDisplayChannel) {
       if (!ipDisplayed) {
          // Display the device's IP address...
-         display.fillRect(-64, 6, 128, 35, DISPLAY_BLACK);
+         display.fillRect(-64, 6, 128, 25, DISPLAY_BLACK);
          display.setTextColor(gaugeColor);
          display.setTextBackground(DISPLAY_BLACK);
          display.setCursor(40, 80);
@@ -247,7 +286,16 @@ void AnalogGauge::updateGauge() {
          display.setTextBackground(DISPLAY_BLACK);
          display.setCursor(40, 78);
          display.setTextSize(2);
-         display.printf("%5.1f%c ", newDisplayValue, valueSuffix[currentDisplayChannel]);
+         char fmtStr[10];
+         uint8 prec = precision[currentDisplayChannel];
+         if (prec > 0) {
+            int wholeSize = 6 - prec;
+            sprintf(fmtStr, "%%%d.%df%%c" , wholeSize, (int)prec);
+         }
+         else {
+            strcpy(fmtStr, "%5.0f%c ");
+         }
+         display.printf(fmtStr, newDisplayValue, valueSuffix[currentDisplayChannel]);
 
       }
    }

@@ -16,13 +16,14 @@
 #include "transforms/debounce.h"
 #include "transforms/moving_average.h"
 #include "transforms/change_filter.h"
-#include "transforms/noise_filter.h"
+#include "transforms/median.h"
 #include "signalk/signalk_output.h"
+#include "transforms/transform.h"
 
 const char* sk_path = "electrical.generator.engine.waterTemp";
 
-const float Vin = 3.3; // Voltage sent into the voltage divider circuit that includes the analog sender
-const float R1 = 1000.0; // The resistance, in Ohms, of the R1 resitor in the analog sender divider circuit
+const float Vin = 5; // Voltage sent into the voltage divider circuit that includes the analog sender
+const float R1 = 5100.0; // The resistance, in Ohms, of the R1 resitor in the analog sender divider circuit
 
 
 const float minAnalogGaugeVal = 327.594; // Minimum value to display on analog gauge
@@ -62,12 +63,13 @@ ReactESP app([] () {
   
 
   Linear* pTempInKelvin;
-  AnalogVoltage* pVoltage;
+  NumericTransform* pVoltage;
 
-  pAnalogInput->connectTo(new NoiseFilter(100, 8, "/gauge/smooth/noise")) ->
-                connectTo(new MovingAverage(10, 1.0, "/gauge/smooth/avg")) ->
-                connectTo(new ChangeFilter(1.0, "/gauge/smooth/change")) ->
-                connectTo(pVoltage = new AnalogVoltage()) ->
+  pAnalogInput->connectTo(new Median(1, "/gauge/smooth/samples")) ->
+                connectTo(new ChangeFilter(0, 500.0, 15, "/gauge/smooth/change")) ->
+                connectTo(new MovingAverage(2, 1.0, "/gauge/smooth/avg")) ->
+                connectTo(new AnalogVoltage()) ->
+                connectTo(pVoltage = new Linear(1.0, 0.0, "/gauge/voltage/calibrate")) ->
                 connectTo(new VoltageDividerR2(R1, Vin)) ->
                 connectTo(new TemperatureInterpreter("/gauge/temp/curve")) ->
                 connectTo(pTempInKelvin = new Linear(1.0, 0.0, "/gauge/temp/calibrate")) ->
@@ -86,6 +88,7 @@ ReactESP app([] () {
     
   pVoltage->connectTo(pGauge, 3);
   pGauge->setValueSuffix('v', 3);
+  pGauge->setPrecision(3, 3);
 
   pButton->connectTo(new Debounce()) -> connectTo(pGauge);
 

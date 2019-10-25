@@ -55,7 +55,9 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
 
         void setGaugeIcon(uint8_t* pNewIcon) { pGaugeIcon = pNewIcon; } 
 
-        void setValueSuffix(char suffix, int inputChannel);
+        void setValueSuffix(char suffix, int inputChannel = 0);
+
+        void setPrecision(uint8 precision, int inputChannel = 0);
 
         void setDefaultDisplayIndex(int inputChannel) { currentDisplayChannel = inputChannel; }
 
@@ -98,6 +100,7 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         double lastDisplayValue = -99.9;
         double* input;
         char* valueSuffix;
+        uint8* precision;
         int currentDisplayChannel;
         int maxDisplayChannel;
         bool ipDisplayed = false;
@@ -105,7 +108,7 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         uint16_t defaultValueColor = DISPLAY_WHITE;
 
         int blinkCount = 0;
-        int wifiIcon = -1;
+        int displayIcon = -1;
         uint8_t* pGaugeIcon;
 
         DFRobot_Display& display;
