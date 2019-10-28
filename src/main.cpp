@@ -20,7 +20,7 @@
 #include "signalk/signalk_output.h"
 #include "transforms/transform.h"
 
-const char* sk_path = "electrical.generator.engine.waterTemp";
+const char* sk_path = "electrical.generator.engine.coolantTemperature";
 
 const float Vin = 5; // Voltage sent into the voltage divider circuit that includes the analog sender
 const float R1 = 5100.0; // The resistance, in Ohms, of the R1 resitor in the analog sender divider circuit
@@ -62,18 +62,19 @@ ReactESP app([] () {
   DigitalInputValue* pButton = new DigitalInputValue(button_pin, INPUT, CHANGE);
   
 
-  Linear* pTempInKelvin;
+  NumericTransform* pTempInKelvin;
   NumericTransform* pVoltage;
+  NumericTransform* pR2;
 
-  pAnalogInput->connectTo(new Median(1, "/gauge/smooth/samples")) ->
-                connectTo(new ChangeFilter(0, 500.0, 15, "/gauge/smooth/change")) ->
-                connectTo(new MovingAverage(2, 1.0, "/gauge/smooth/avg")) ->
+  pAnalogInput->connectTo(new Median(10, "/gauge/voltage/samples")) ->
+                connectTo(new MovingAverage(5, 1.0, "/gauge/voltage/avg")) ->
                 connectTo(new AnalogVoltage()) ->
                 connectTo(pVoltage = new Linear(1.0, 0.0, "/gauge/voltage/calibrate")) ->
-                connectTo(new VoltageDividerR2(R1, Vin)) ->
+                connectTo(pR2 = new VoltageDividerR2(R1, Vin)) ->
                 connectTo(new TemperatureInterpreter("/gauge/temp/curve")) ->
-                connectTo(pTempInKelvin = new Linear(1.0, 0.0, "/gauge/temp/calibrate")) ->
-                connectTo(new SKOutputNumber(sk_path, "/gauge/temp/sk")) ->
+                connectTo(new Linear(1.0, 0.0, "/gauge/temp/calibrate")) ->
+                connectTo(pTempInKelvin = new ChangeFilter(1, 10, 6, "/gauge/output/change")) ->
+                connectTo(new SKOutputNumber(sk_path, "/gauge/output/sk")) ->
                 connectTo(pGauge);
   pGauge->setValueSuffix('k', 0);
 
@@ -89,6 +90,12 @@ ReactESP app([] () {
   pVoltage->connectTo(pGauge, 3);
   pGauge->setValueSuffix('v', 3);
   pGauge->setPrecision(3, 3);
+
+  pR2->connectTo(pGauge, 4);
+  pGauge->setValueSuffix('o', 4);
+  pR2->connectTo(new ChangeFilter(1, 1000, 6)) ->
+       connectTo(new SKOutputNumber("", "/gauge/temp/sender/sk"));
+
 
   pButton->connectTo(new Debounce()) -> connectTo(pGauge);
 
