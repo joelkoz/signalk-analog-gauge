@@ -32,7 +32,7 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
 
                ValueColor();
                ValueColor(float minVal, float maxVal, uint16_t color);
-               ValueColor(JsonObject& obj);
+               ValueColor(JsonObject obj);
 
                friend bool operator<(const ValueColor& lhs, const ValueColor& rhs) { return lhs.minVal < rhs.minVal; }               
         };
@@ -87,7 +87,7 @@ class AnalogGauge : public NumericConsumer, public BooleanConsumer,
         uint16_t getDefaultValueColor() { return defaultValueColor; }
 
         // For reading and writing the configuration
-        virtual JsonObject& get_configuration(JsonBuffer& buf) override;
+        virtual void get_configuration(JsonObject& doc) override;
         virtual bool set_configuration(const JsonObject& config) override;
         virtual String get_config_schema() override;
         

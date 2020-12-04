@@ -20,7 +20,7 @@ AnalogGauge::ValueColor::ValueColor() {
 AnalogGauge::ValueColor::ValueColor(float minVal, float maxVal, uint16_t color) : minVal{minVal}, maxVal{maxVal}, color{color} {
 }
 
-AnalogGauge::ValueColor::ValueColor(JsonObject& obj) : minVal{obj["minVal"]}, maxVal{obj["maxVal"]}, color{obj["color"]} {
+AnalogGauge::ValueColor::ValueColor(JsonObject obj) : minVal{obj["minVal"]}, maxVal{obj["maxVal"]}, color{obj["color"]} {
 
 }
 
@@ -334,22 +334,19 @@ void AnalogGauge::set_input(bool buttonPressed, uint8_t idx) {
 }
 
 
-JsonObject& AnalogGauge::get_configuration(JsonBuffer& buf) {
-  JsonObject& root = buf.createObject();
+void AnalogGauge::get_configuration(JsonObject& root) {
+
   root["default_display"] = currentDisplayChannel;
   root["minVal"] = minVal;
   root["maxVal"] = maxVal;
 
-  JsonArray& jRanges = root.createNestedArray("ranges");
+  JsonArray ranges = root.createNestedArray("ranges");
   for (auto& range : valueColors) {
-    JsonObject& entry = buf.createObject();
+    JsonObject entry = ranges.createNestedObject();
     entry["minVal"] = range.minVal;
     entry["maxVal"] = range.maxVal;
     entry["color"] = range.color;
-    jRanges.add(entry);
   }
-
-  return root;
 }
 
 
@@ -367,11 +364,11 @@ bool AnalogGauge::set_configuration(const JsonObject& config) {
   minVal = config["minVal"];
   maxVal = config["maxVal"];
 
-  JsonArray& arr = config["ranges"];
-  if (arr.size() > 0) {
+  JsonArray ranges = config["ranges"];
+  if (ranges.size() > 0) {
     valueColors.clear();
-    for (auto& jentry : arr) {
-        ValueColor range(jentry.as<JsonObject>());
+    for (JsonObject entry : ranges) {
+        ValueColor range(entry);
         valueColors.insert(range);
     }
 
