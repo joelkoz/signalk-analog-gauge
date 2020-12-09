@@ -61,8 +61,9 @@ ReactESP app([] () {
                     ->set_standard_sensors(StandardSensors::NONE)
                     ->get_app();
 
-  SKEmitter::Metadata* metadata = new SKEmitter::Metadata();
-  metadata->display_name_ = "Generator Temp";
+  SKMetadata* metadata = new SKMetadata();
+  metadata->display_name_ = "Generator Temperature";
+  metadata->short_name_ = "Gen Temp";
   metadata->description_ = "Generator coolant temperature";
   metadata->units_ = "K";
 
@@ -75,7 +76,7 @@ ReactESP app([] () {
   pGauge->addValueRange(AnalogGauge::ValueColor(369.261, maxAnalogGaugeVal, DISPLAY_RED));
 
   AnalogInput* pAnalogInput = new AnalogInput();
-  DigitalInputValue* pButton = new DigitalInputValue(button_pin, INPUT, CHANGE);
+  DigitalInputChange* pButton = new DigitalInputChange(button_pin, INPUT, CHANGE);
   
 
   NumericTransform* pTempInKelvin;
@@ -111,7 +112,6 @@ ReactESP app([] () {
   pGauge->setValueSuffix('o', 4);
   pR2->connect_to(new ChangeFilter(1, 1000, 6))
        -> connect_to(new SKOutputNumber("", "/gauge/temp/sender/sk"));
-
 
   pButton->connect_to(new IntToBool()) ->
           connect_to(new Debounce()) ->
